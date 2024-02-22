@@ -8,10 +8,16 @@ use ViaThinkSoft\OIDplus\OIDplusException;
 
 require_once __DIR__ . '/../../../../includes/oidplus.inc.php';
 
+error_reporting(OIDplus::baseConfig()->getValue('DEBUG') ? E_ALL : 0);
+@ini_set('display_errors', OIDplus::baseConfig()->getValue('DEBUG') ? '1' : '0');
+
 set_exception_handler(array(OIDplusGui::class, 'html_exception_handler'));
-
+ob_start(); 
  OIDplus::init(true);
-
+  session_write_close();
+originHeaders();
+OIDplus::invoke_shutdown();
+header('Connection: close');
 if (OIDplus::baseConfig()->getValue('DISABLE_PLUGIN_Frdlweb\OIDplus\OIDplusCDNProxyPagePlugin', false)) {
 	//throw new OIDplusException(_L('This plugin was disabled by the system administrator!'));
 	return;
