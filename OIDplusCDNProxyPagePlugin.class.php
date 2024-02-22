@@ -81,7 +81,7 @@ class OIDplusCDNProxyPagePlugin  extends OIDplusPagePluginPublic
 			'text' => str_replace('OID', 'WEID as OID Arc', _L('Register a free OID')),
 		);
 */
-		return true;
+		return false;
 	}
 
 
@@ -134,6 +134,26 @@ class OIDplusCDNProxyPagePlugin  extends OIDplusPagePluginPublic
 	    $CDN_BASEPATH =	OIDplus::baseConfig()->getValue('FRDLWEB_CDN_RELATIVE_URI', self::DEFAULT_CDN_BASEPATH );
 	    $BASE_URI = rtrim(OIDplus::webpath(OIDplus::localpath(),OIDplus::PATH_ABSOLUTE_CANONICAL), '/ ').'/'.trim($CDN_BASEPATH, '/ ').'/';
 	    if(!str_starts_with($request, $CDN_BASEPATH))return false;
+	   ob_start(); 
+	   
+   if (!isset($_COOKIE['csrf_token'])) {
+	// This is the main CSRF token used for AJAX.
+	$token = OIDplus::authUtils()->genCSRFToken();
+	OIDplus::cookieUtils()->setcookie('csrf_token', $token, 0, false);
+	unset($token);
+  }
+
+  if (!isset($_COOKIE['csrf_token_weak'])) {
+	// This CSRF token is created with SameSite=Lax and must be used
+	// for OAuth 2.0 redirects or similar purposes.
+	$token = OIDplus::authUtils()->genCSRFToken();
+	OIDplus::cookieUtils()->setcookie('csrf_token_weak', $token, 0, false, 'Lax');
+	unset($token);
+  }	   
+	   
+	   
+	   OIDplus::invoke_shutdown();
+	   
 	    //$isCdnUri = preg_match('@^/'.preg_quote($request,'@').'/(.+)$@', $_SERVER['REQUEST_URI'], $m);
 	    $isCdnUri = str_starts_with($request, $CDN_BASEPATH) 
 			&& (
@@ -159,7 +179,7 @@ class OIDplusCDNProxyPagePlugin  extends OIDplusPagePluginPublic
 	        $iris = array();
 		   	$oids = array();
 		    
-		  if(!$objGoto){ 
+		  if($isCdnUri && !$objGoto){ 
 			$last = false;
 		    $q = "select * from ###iri where ";
 		    $wheres = [];
@@ -269,6 +289,9 @@ class OIDplusCDNProxyPagePlugin  extends OIDplusPagePluginPublic
 					
 					$html = '';
 					$html.='<h1>Files of '.$objGoto->getTitle().'</h1>';
+					
+					if($objGoto->userHasReadRights() ){
+					
 					$html.='<ul>'; 
 					 foreach($links as $normalized => $link){
 						 $html.=sprintf('<li><a href="%s" target="_blank">%s</a> : <a href="%s" target="_blank">%s</a>'
@@ -278,7 +301,11 @@ class OIDplusCDNProxyPagePlugin  extends OIDplusPagePluginPublic
 										$permaLinkDirectory.basename($link), 'OID-/Permalink');
 					 }
 					$html.='</ul>';
-			
+					}else{
+						$html.=' - You have no access to read the file list, please login!';
+					}
+					
+					
 					$pageHTML = $this
 						// OIDplus::gui() 
 						->showMainPage($objGoto->getTitle(),
@@ -339,11 +366,16 @@ class OIDplusCDNProxyPagePlugin  extends OIDplusPagePluginPublic
 	            }elseif($id && is_object($objGoto) && ( OIDplusObject::exists($id)
 													 //  && OIDplusObject::exists('oid:'.$oid)
 													  ) && file_exists($local_file)){//404 from local OID attachments dir	 
+
+				   
 					if (strpos($filename, '/') !== false) throw new OIDplusException(_L('Illegal file name'));	
 			    	if (strpos($filename, '\\') !== false) throw new OIDplusException(_L('Illegal file name'));	
 				    if (strpos($filename, '..') !== false) throw new OIDplusException(_L('Illegal file name'));	
 				    if (strpos($filename, chr(0)) !== false) throw new OIDplusException(_L('Illegal file name'));			   
-				   
+				  
+				   if(!$objGoto->userHasReadRights() ){
+					    throw new OIDplusException(_L(sprintf('You have no access to %s, please login!',$filename)));
+				   }				   
 				   
 				//   OIDplus::invoke_shutdown();            
 				   \VtsBrowserDownload::output_file($local_file, '', 1);				
@@ -352,6 +384,7 @@ class OIDplusCDNProxyPagePlugin  extends OIDplusPagePluginPublic
 			}//$objGoto
 		   
 		//   session_write_close();
+		    originHeaders();
 		    $file = $this->cdnCacheDir . explode('?', $uri)[0];
 		    $filename = basename($file);
 		   
@@ -566,6 +599,8 @@ class OIDplusCDNProxyPagePlugin  extends OIDplusPagePluginPublic
 							.'">';
 		}
 
+		//$files[] = 'var csrf_token = '.js_escape($_COOKIE['csrf_token'] ?? '').';';
+		$head_elems[] = '<script>var csrf_token = '.js_escape($_COOKIE['csrf_token'] ?? '').';</script>';		
 		return $head_elems;
 	}	
 	
