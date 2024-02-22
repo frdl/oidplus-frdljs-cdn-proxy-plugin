@@ -7,7 +7,7 @@
 		<type>ViaThinkSoft\OIDplus\OIDplusPagePluginPublic</type>
 
 	<info>
-		<name>CDN</name>
+		<name>OIDplus CDN Proxy Plugin</name>
 		<author>Frdlweb</author>
 		<license>MIT</license>
 		<version />
