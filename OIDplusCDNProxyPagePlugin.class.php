@@ -112,6 +112,7 @@ class OIDplusCDNProxyPagePlugin  extends OIDplusPagePluginPublic
 		 mkdir(dirname($cacheFile), 0755, true);	
 		}
 		file_put_contents($cacheFile, $out);
+		chmod($cacheFile, 0655);
 	}
 
 	/**
@@ -350,9 +351,16 @@ class OIDplusCDNProxyPagePlugin  extends OIDplusPagePluginPublic
 			   }
 			}//$objGoto
 		   
-		   session_write_close();
+		//   session_write_close();
 		    $file = $this->cdnCacheDir . explode('?', $uri)[0];
 		    $filename = basename($file);
+		   
+		   	$test=explode('.', $filename);  
+
+		   if('php' === $test[count($test)-1]){	
+			   throw new OIDplusException(_L(sprintf('The file %s is not wanted!',$filename)));
+		   }
+		   
 		    if(!$this->cache_read_serve($file, $this->cdnCacheExpires)){
 				$CDN_TARGET_BASE =	OIDplus::baseConfig()->getValue('FRDLWEB_CDN_PROXY_TARGET_BASE', self::DEFAULT_CDN_MASTER_BASEURI );
 				$url = rtrim($CDN_TARGET_BASE, '/ ').'/'.$uri;
