@@ -8,36 +8,32 @@ use ViaThinkSoft\OIDplus\OIDplusException;
 
 require_once __DIR__ . '/../../../../includes/oidplus.inc.php';
 
+OIDplus::init(true);
+
 error_reporting(OIDplus::baseConfig()->getValue('DEBUG') ? E_ALL : 0);
 @ini_set('display_errors', OIDplus::baseConfig()->getValue('DEBUG') ? '1' : '0');
 
 set_exception_handler(array(OIDplusGui::class, 'html_exception_handler'));
 ob_start(); 
- OIDplus::init(true);
-  session_write_close();
-originHeaders();
+//  DONE ALREADY ! OIDplus::init(true);
+// session_write_close();
 OIDplus::invoke_shutdown();
-header('Connection: close');
+//originHeaders();
+header('Content-Type:application/javascript');
+//header('Connection: close');
 if (OIDplus::baseConfig()->getValue('DISABLE_PLUGIN_Frdlweb\OIDplus\OIDplusCDNProxyPagePlugin', false)) {
 	//throw new OIDplusException(_L('This plugin was disabled by the system administrator!'));
 	return;
 }
+ 
 
-//originHeaders();
-header('Content-Type:application/javascript');
-#
+
 //var __token 
 //= window.csrf_token 
 //= csrf_token;
 //alert(__token) ;
 //var jquery = window.$;
-$jscode = <<<JSCODE
-function io4test(){
- alert('test');	
-}
-JSCODE;
 
-echo $jscode;
 echo frdlwebJS();
 
 
@@ -58,8 +54,8 @@ function frdlwebJS(){
 	
 	
 $jscode = <<<JSCODE
- ((q, w,d)=>{
-$(document).ready(()=>{
+((q, w,d)=>{
+//$(document).ready(()=>{
 var s=d.createElement('script');
 s.setAttribute('src', '$cdn/webfan.js?cdn=$BASE_URI&?' + q);		
 s.async='defer';
@@ -84,7 +80,7 @@ s.onload=()=>{
   });
 };
  d.head.appendChild(s);		
-});	 
+//});	 
 
 })('$FRDLWEB_JS_CONFIG_QUERY', window, document);
 JSCODE;
