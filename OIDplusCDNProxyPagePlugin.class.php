@@ -398,6 +398,12 @@ class OIDplusCDNProxyPagePlugin  extends OIDplusPagePluginPublic
 			   throw new OIDplusException(_L(sprintf('The file %s is not wanted!',$filename)));
 		   }
 		   
+					if (strpos($filename, '/') !== false) throw new OIDplusException(_L('Illegal file name'));	
+			    	if (strpos($filename, '\\') !== false) throw new OIDplusException(_L('Illegal file name'));	
+				    if (strpos($file, '..') !== false) throw new OIDplusException(_L('Illegal file name'));	
+				    if (strpos($filename, chr(0)) !== false) throw new OIDplusException(_L('Illegal file name'));			   
+		   
+		   
 		    if(!$this->cache_read_serve($file, $this->cdnCacheExpires)){
 
 				//die($target);
