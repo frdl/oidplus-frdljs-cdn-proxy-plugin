@@ -153,7 +153,7 @@ class OIDplusCDNProxyPagePlugin  extends OIDplusPagePluginPublic
 	   
 	   $baseHref = rtrim($baseHref, '/ ').'/';
 	   ob_start();    
-	   
+	   originHeaders();
 	   OIDplus::invoke_shutdown();
 	
 	   
