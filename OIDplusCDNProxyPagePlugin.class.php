@@ -63,7 +63,7 @@ class OIDplusCDNProxyPagePlugin  extends OIDplusPagePluginPublic
 			OIDplus::baseConfig()->setValue('FRDLWEB_CDN_PROXY_TARGET_BASE', $value );
 		});
 		
-		if(true === $html){
+		if(true !== $html){
 			self::prune($this->cdnCacheDir, $this->cdnCacheExpires, true, false);
 		}
 	}
@@ -115,7 +115,7 @@ class OIDplusCDNProxyPagePlugin  extends OIDplusPagePluginPublic
 		 mkdir(dirname($cacheFile), 0755, true);	
 		}
 		file_put_contents($cacheFile, $out);
-		chmod($cacheFile, 0755);
+		chmod($cacheFile, 0644);
 		touch($cacheFile);
 	}
 
