@@ -18,7 +18,7 @@ ob_start();
 //  DONE ALREADY ! OIDplus::init(true);
 // session_write_close();
 OIDplus::invoke_shutdown();
-//originHeaders();
+ originHeaders();
 header('Content-Type:application/javascript');
 //header('Connection: close');
 if (OIDplus::baseConfig()->getValue('DISABLE_PLUGIN_Frdlweb\OIDplus\OIDplusCDNProxyPagePlugin', false)) {
