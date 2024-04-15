@@ -46,6 +46,8 @@ function frdlwebJS(){
 //s.setAttribute('src', 'https://io4.xyz.webfan3.de/webfan.js?cdn=https://cdn.startdir.de&?' + q);
 	
 	$cdn = OIDplus::baseConfig()->getValue('FRDLWEB_CDN_PROXY_TARGET_BASE', OIDplusCDNProxyPagePlugin::DEFAULT_CDN_MASTER_BASEURI );
+	$cdn='https://io4.xyz.webfan3.de';
+	
 	
 	    $CDN_BASEPATH =	OIDplus::baseConfig()->getValue('FRDLWEB_CDN_RELATIVE_URI', OIDplusCDNProxyPagePlugin::DEFAULT_CDN_BASEPATH );
 	    $BASE_URI = rtrim(OIDplus::webpath(OIDplus::localpath(),OIDplus::PATH_ABSOLUTE_CANONICAL), '/ ').'/'.trim($CDN_BASEPATH, '/ ')
