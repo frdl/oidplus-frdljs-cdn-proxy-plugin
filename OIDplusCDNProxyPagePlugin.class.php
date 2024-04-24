@@ -384,7 +384,7 @@ class OIDplusCDNProxyPagePlugin  extends OIDplusPagePluginPublic
 				$q = $_GET;
 				unset($q['h404']);
 		        ksort($q);
-				$url = rtrim($CDN_TARGET_BASE, '/ ').'/'.$uri.'?'. \http_build_query($q, null, '&', \PHP_QUERY_RFC3986);
+				$url = rtrim($CDN_TARGET_BASE, '/ ').'/'.$uri.'?'. \http_build_query($q, '', '&', \PHP_QUERY_RFC3986);
 		   
 		        $hp = json_encode($q);
 		   
