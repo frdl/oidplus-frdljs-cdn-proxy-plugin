@@ -16,7 +16,6 @@
 		"frdl/oidplus-io4-bridge-plugin" : "Composer and Bridges Manager",
 	    "doctrine/cache" : "caching tools"
 	},
-    "require" : {
- 
+    "require" : { 
     }
 }
