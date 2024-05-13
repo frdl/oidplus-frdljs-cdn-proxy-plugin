@@ -115,7 +115,7 @@ class OIDplusCDNProxyPagePlugin  extends OIDplusPagePluginPublic
 		 mkdir(dirname($cacheFile), 0755, true);	
 		}
 		file_put_contents($cacheFile, $out);
-		chmod($cacheFile, 0644);
+	//	chmod($cacheFile, 0755);
 		touch($cacheFile);
 	}
 
@@ -142,8 +142,16 @@ class OIDplusCDNProxyPagePlugin  extends OIDplusPagePluginPublic
 	 	//die($request);
 	    $CDN_BASEPATH =	OIDplus::baseConfig()->getValue('FRDLWEB_CDN_RELATIVE_URI', self::DEFAULT_CDN_BASEPATH );
 	    $BASE_URI = rtrim(OIDplus::webpath(OIDplus::localpath(),OIDplus::PATH_ABSOLUTE_CANONICAL), '/ ').'/'.trim($CDN_BASEPATH, '/ ').'/';
-	    if(!str_starts_with($request, $CDN_BASEPATH))return false;
-
+	   $rel_url_original =substr($_SERVER['REQUEST_URI'], strlen(OIDplus::webpath(null, OIDplus::PATH_RELATIVE_TO_ROOT)));
+	   
+	   /*
+	    if(!str_starts_with($request, $CDN_BASEPATH)){
+			print_r([$request, $CDN_BASEPATH, $rel_url_original]);
+			die();
+			return false;
+		}
+		*/
+        $request = $rel_url_original;
 	   
 	   $baseHref = !isset($_SERVER['HTTP_X_FORWARDED_FOR']) ? (OIDplus::isSSL()
 															   ? 'https://'
@@ -445,9 +453,9 @@ class OIDplusCDNProxyPagePlugin  extends OIDplusPagePluginPublic
 	
 				//file_put_contents($file, $result);
 				 $this->cdn_write_cache($result, $file);
-				
+				 
 				 if(!$this->cache_read_serve($file, $this->cdnCacheExpires)){
-					 throw new OIDplusException(_L(sprintf('The file %s is not available [1].',$filename)));
+					 throw new OIDplusException(_L(sprintf('The file %s is not available [%s].',$filename, __LINE__)));
 				 }else{
 					 return die(); 
 				 }
