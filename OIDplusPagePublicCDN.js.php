@@ -50,7 +50,10 @@ function frdlwebJS(){
 	
 	
 	    $CDN_BASEPATH =	OIDplus::baseConfig()->getValue('FRDLWEB_CDN_RELATIVE_URI', OIDplusCDNProxyPagePlugin::DEFAULT_CDN_BASEPATH );
-	    $BASE_URI = rtrim(OIDplus::webpath(OIDplus::localpath(),OIDplus::PATH_ABSOLUTE_CANONICAL), '/ ').'/'.trim($CDN_BASEPATH, '/ ')
+	    $BASE_URI = rtrim(OIDplus::webpath(OIDplus::localpath(),
+										 //OIDplus::PATH_ABSOLUTE_CANONICAL
+										 OIDplus::PATH_ABSOLUTE
+										  ), '/ ').'/'.trim($CDN_BASEPATH, '/ ')
 			//.'/'
 			;	
 	
