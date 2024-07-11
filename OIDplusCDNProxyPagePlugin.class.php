@@ -36,7 +36,7 @@ class OIDplusCDNProxyPagePlugin  extends OIDplusPagePluginPublic
 	
 	public function __construct(){	 		
 		$this->cdnCacheDir = OIDplus::baseConfig()->getValue('CDN_CACHE_DIRECTORY', OIDplus::localpath().'userdata/cache/cdn-assets/' );
-		$this->cdnCacheExpires = OIDplus::baseConfig()->getValue('CDN_CACHE_EXPIRES', 60 * 15 );	
+		$this->cdnCacheExpires = max(3 * 60 * 60, intval(OIDplus::baseConfig()->getValue('CDN_CACHE_EXPIRES', 24 * 60 * 60 )));	
 	}
 	
 	
@@ -172,6 +172,7 @@ class OIDplusCDNProxyPagePlugin  extends OIDplusPagePluginPublic
 		//	|| preg_match('/'.preg_quote($CDN_BASEPATH,'/@').'(?P<id>([^\/]+))\/(?P<uri>(.+))/', $_SERVER['REQUEST_URI'], $matches)
 		 );
 	   
+	   if(!$matches)return false;
 	       $uri = ltrim($matches['uri'], '/ ');	  
 	       $p = explode('/', $uri);	  	   
            $id = $p[0];
@@ -281,18 +282,24 @@ class OIDplusCDNProxyPagePlugin  extends OIDplusPagePluginPublic
 								//  .'/'
 								 . '*');
 			 
-					  $linkDirectory = $BASE_URI.$objGoto->getIriNotation(false).'/';
+					
+					
+					
+					
+					
+					  //$linkDirectory = $BASE_URI.$objGoto->getIriNotation(false).'/';
+					  $linkDirectory = $BASE_URI.$this->getObjectsWebpathNotation($objGoto).'/';
 					  $permaLinkDirectory = $BASE_URI.$id.'/';
 					
 					  $links = [];
 						foreach($files as $f){					 
 							$links[$BASE_URI
-						             .trim(strtolower($objGoto->getIriNotation(false)), '/ ')
+						             .trim(strtolower($this->getObjectsWebpathNotation($objGoto)), '/ ')
 								 //  .$objGoto->getIriNotation(false)
 								.'/'.basename($f) ] = 
 								$BASE_URI
 						      //.strtolower($objGoto->getIriNotation(false))
-								  .trim($objGoto->getIriNotation(false), '/ ')
+								  .trim($this->getObjectsWebpathNotation($objGoto), '/ ')
 								.'/'.basename($f);					
 						}		
 					
@@ -412,7 +419,7 @@ class OIDplusCDNProxyPagePlugin  extends OIDplusPagePluginPublic
 				    if (strpos($filename, chr(0)) !== false) throw new OIDplusException(_L('Illegal file name'));			   
 		   
 		   
-		    if(!$this->cache_read_serve($file, $this->cdnCacheExpires)){
+		    if(!$this->cache_read_serve($file,intval( $this->cdnCacheExpires ) )){
 
 				//die($target);
 				$opts =[     
@@ -468,6 +475,20 @@ class OIDplusCDNProxyPagePlugin  extends OIDplusPagePluginPublic
     return false;
    }
 
+	
+	
+	
+	
+	public function getObjectsWebpathNotation($objGoto){
+		if(is_callable([$objGoto, 'getIriNotation'])){
+			return $objGoto->getIriNotation(false);
+		}
+		
+		$del = substr( $objGoto->crudInsertPrefix(), -1);
+		
+		$str = str_replace($del, '/', $objGoto->nodeId(false));
+		return $str;
+	}
 	
 
 	public function modifyContent($id, &$title, &$icon, &$text) {		
