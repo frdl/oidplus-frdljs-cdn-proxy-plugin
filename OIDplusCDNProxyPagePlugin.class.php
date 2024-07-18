@@ -42,6 +42,15 @@ class OIDplusCDNProxyPagePlugin  extends OIDplusPagePluginPublic
 	
 	public function init($html = true) {
 		
+		
+		
+		$io4Plugin = OIDplus::getPluginByOid("1.3.6.1.4.1.37476.9000.108.19361.24196");		         
+		if (!is_null($io4Plugin) && \is_callable([$io4Plugin,'getWebfat']) ) {
+		   $io4Plugin->getWebfat(true,false);	              
+		}else{
+			throw new OIDplusException(sprintf('You have to install the dependencies of the plugin package %s via composer OR you need the plugin %s to be installed in OIDplus and its remote-autoloader enabled. Read about how to use composer with OIDplus at: https://weid.info/plus/ .', 'https://github.com/frdl/oidplus-frdlweb-rdap', 'https://github.com/frdl/oidplus-io4-bridge-plugin'));
+		}	
+		
 		OIDplus::config()->prepareConfigKey('FRDLWEB_CDN_RELATIVE_URI', 'The CDN base uri to the CDN/Proxy -Module. Example: "cdn/" or "assets/"', self::DEFAULT_CDN_BASEPATH, OIDplusConfig::PROTECTION_EDITABLE, function ($value) {
 		  
 			 	OIDplus::baseConfig()->setValue('FRDLWEB_CDN_RELATIVE_URI', $value );
@@ -172,7 +181,7 @@ class OIDplusCDNProxyPagePlugin  extends OIDplusPagePluginPublic
 		//	|| preg_match('/'.preg_quote($CDN_BASEPATH,'/@').'(?P<id>([^\/]+))\/(?P<uri>(.+))/', $_SERVER['REQUEST_URI'], $matches)
 		 );
 	   
-	   if(!$matches)return false;
+	   if(!isset($matches))return false;
 	       $uri = ltrim($matches['uri'], '/ ');	  
 	       $p = explode('/', $uri);	  	   
            $id = $p[0];
@@ -513,9 +522,7 @@ class OIDplusCDNProxyPagePlugin  extends OIDplusPagePluginPublic
 
 
 
-   // public function gui($id, &$out, &$handled) {
- //
-   // }
+
 
 /*
 	public function httpHeaderCheck(&$http_headers) {
@@ -737,11 +744,90 @@ class OIDplusCDNProxyPagePlugin  extends OIDplusPagePluginPublic
 		return $out;
 	}
 
+	
+	
+   public function gui($id, &$out, &$handled) {
+		 if('oidplus:home'===$id){
+			 /*
+			 header('Location: '.OIDplus::webpath(null,OIDplus::PATH_ABSOLUTE_CANONICAL) );
+			 die('<a href="'.OIDplus::webpath(null,OIDplus::PATH_ABSOLUTE_CANONICAL).'">
+			 Go to: '.OIDplus::webpath(null,OIDplus::PATH_ABSOLUTE_CANONICAL)
+				 .'</a>'
+		     );
+			 */
+			 header('Location: '.OIDplus::webpath(null,OIDplus::PATH_ABSOLUTE_CANONICAL) );
+			 $io4Plugin = OIDplus::getPluginByOid("1.3.6.1.4.1.37476.9000.108.19361.24196");		
+			 $out['text']  = $io4Plugin->handle404('/'); 
+			 $handled = true;
+			// flush();
+			//  die($out['text']);
+		 }  	   
+     }
+	
+	
  
-	public function publicSitemap(&$out) { 
-		//$out[] = OIDplus::getSystemUrl().'?goto='.urlencode('com.frdlweb.freeweid'); 
-	}
+	public function tree(array &$json, string $ra_email=null, bool $nonjs=false, string $req_goto=''): bool {
+	
+		if (file_exists(__DIR__ . '/treeicon.png')) {
+			$tree_icon = OIDplus::webpath(__DIR__) . 'treeicon.png';
+		} else {
+			$tree_icon = null; // default icon (folder)
+		}
+		
+		 $json[] = array(
+		    'id' => 'oidplus:home',
+			'icon' => $tree_icon,
+			// 'a_attr'=>[
+			// 	 'href'=>OIDplus::webpath(null,OIDplus::PATH_ABSOLUTE_CANONICAL),				 
+			 // ],
+			 // 'href'=>OIDplus::webpath(null,OIDplus::PATH_ABSOLUTE_CANONICAL),	
+			'text' => _L('Home'), 
+		);		
+		 /**/
 
+	  	$json[] = array(
+			'id' => 'oidplus:system',
+			//'icon' => $tree_icon,
+			'text' => _L('Registry'), 
+		);	
+		
+		 
+	//	if (!OIDplus::authUtils()->isAdminLoggedIn()) return true;
+
+
+/*
+		$json[] = array(
+			'id' => self::PAGE_ID_COMPOSER,
+			//'icon' => $tree_icon,
+			'text' => _L('Composer Plugins'), 
+		);
+		
+		
+		$json[] = array(
+			'id' => self::PAGE_ID_WEBFAT,
+			//'icon' => $tree_icon,
+			'text' => _L('Webfan Webfat Setup'),
+			//'href'=>$this->getWebfatSetupLink(),
+		);
+
+		$json[] = array(
+			'id' => self::PAGE_ID_BRIDGE,
+			//'icon' => $tree_icon,
+			'text' => _L('Webfan IO4 Bridge'), 
+		);
+*/
+		return true;		
+	}
+	
+	
+	 public function publicSitemap(&$out) { 
+		//$out[] = OIDplus::getSystemUrl().'?goto='.urlencode('com.frdlweb.freeweid'); 
+	  //	 $out[] = OIDplus::getSystemUrl().'?goto='.urlencode('oidplus:system'); 
+		//  $out[] = OIDplus::getSystemUrl(); 
+	 }
+	
+	
+/*	
 	public function tree(array &$json, ?string $ra_email = null, bool $nonjs = false, string $req_goto = ''): bool { 
 
 		if (file_exists(__DIR__ . '/treeicon.png')) {
@@ -749,7 +835,7 @@ class OIDplusCDNProxyPagePlugin  extends OIDplusPagePluginPublic
 		} else {
 			$tree_icon = null; // default icon (folder)
 		}
-/*
+
 		$json[] = array(
 			// Marschall 13.04.2023 wieder umgeändert
 			'id' => 'com.frdlweb.freeweid',
@@ -757,10 +843,10 @@ class OIDplusCDNProxyPagePlugin  extends OIDplusPagePluginPublic
 			'icon' => $tree_icon,
 			'text' => str_replace('OID', 'WEID as OID Arc', _L('Register a free OID')),
 		);
-*/
+
 		return true;
 	}
- 
+ */
 	public function tree_search($request) {
 		$ary = array();
 
