@@ -24,7 +24,7 @@ header_remove();
  originHeaders();
 header('Content-Type:application/javascript');
 //header('Connection: close');
-if (OIDplus::baseConfig()->getValue('DISABLE_PLUGIN_Frdlweb\OIDplus\OIDplusCDNProxyPagePlugin', false)) {
+if (OIDplus::baseConfig()->getValue('DISABLE_PLUGIN_1.3.6.1.4.1.37476.9000.108.19361.16043', false)) {
 	//throw new OIDplusException(_L('This plugin was disabled by the system administrator!'));
 	return;
 }

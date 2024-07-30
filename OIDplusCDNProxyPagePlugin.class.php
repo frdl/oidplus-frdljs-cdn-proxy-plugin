@@ -274,7 +274,7 @@ class OIDplusCDNProxyPagePlugin  extends OIDplusPagePluginPublic
 					)
 			  //  && !empty($file)
 			    && class_exists(OIDplusPagePublicAttachments::class)
-				&& !OIDplus::baseConfig()->getValue('DISABLE_PLUGIN_ViaThinkSoft\OIDplus\OIDplusPagePublicAttachments', false) 
+				&& !OIDplus::baseConfig()->getValue('DISABLE_PLUGIN_1.3.6.1.4.1.37476.2.5.2.4.1.95', false) 
 			   
 			   ){	
 				$uploaddir = OIDplusPagePublicAttachments::getUploadDir($id);
