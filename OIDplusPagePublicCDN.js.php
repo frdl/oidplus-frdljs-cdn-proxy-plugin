@@ -2,7 +2,7 @@
 
 use ViaThinkSoft\OIDplus\Core\OIDplus;
 use ViaThinkSoft\OIDplus\Core\OIDplusGui;
-use ViaThinkSoft\OIDplus\Plugins\frdl\publicPages\oidplus_frdljs_cdn_proxy_plugin\OIDplusCDNProxyPagePlugin;
+use Frdlweb\OIDplus\Plugins\PublicPages\CDNProxy\OIDplusCDNProxyPagePlugin;
 
 require_once __DIR__ . '/../../../../includes/oidplus.inc.php';
 

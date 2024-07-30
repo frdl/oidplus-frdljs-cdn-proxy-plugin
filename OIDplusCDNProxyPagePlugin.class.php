@@ -1,16 +1,16 @@
 <?php
 
 
-namespace ViaThinkSoft\OIDplus\Plugins\frdl\publicPages\oidplus_frdljs_cdn_proxy_plugin;
+namespace Frdlweb\OIDplus\Plugins\PublicPages\CDNProxy;
 
 use ViaThinkSoft\OIDplus\Core\OIDplus;
 use ViaThinkSoft\OIDplus\Core\OIDplusConfig;
 use ViaThinkSoft\OIDplus\Core\OIDplusException;
 use ViaThinkSoft\OIDplus\Core\OIDplusObject;
 use ViaThinkSoft\OIDplus\Core\OIDplusPagePluginPublic;
-use ViaThinkSoft\OIDplus\Plugins\viathinksoft\objectTypes\oid\WeidOidConverter;
-use ViaThinkSoft\OIDplus\Plugins\viathinksoft\publicPages\n000_objects\INTF_OID_1_3_6_1_4_1_37476_2_5_2_3_2;
-use ViaThinkSoft\OIDplus\Plugins\viathinksoft\publicPages\n095_attachments\OIDplusPagePublicAttachments;
+use ViaThinkSoft\OIDplus\Plugins\ObjectTypes\OID\WeidOidConverter;
+use ViaThinkSoft\OIDplus\Plugins\PublicPages\Objects\INTF_OID_1_3_6_1_4_1_37476_2_5_2_3_2;
+use ViaThinkSoft\OIDplus\Plugins\PublicPages\Attachments\OIDplusPagePublicAttachments;
 
 
 \defined('INSIDE_OIDPLUS') or die;
@@ -22,34 +22,34 @@ class OIDplusCDNProxyPagePlugin  extends OIDplusPagePluginPublic
 {
 
 	const DEFAULT_CDN_BASEPATH = 'assets-cdn';
-	const DEFAULT_CDN_MASTER_BASEURI = 'https://cdn.startdir.de';	
-	const DEFAULT_JS_CONFIG_QUERY = 'library.jquery.overwrite=false&DEBUG.enabled=true&website.consent.ads=false&website.consent.enabled=false&angularjs.html5mode.requireBase=false&angularjs.html5mode.rewriteLinks=false&angularjs.html5mode.enabled=false&website.worker.enabled=false&website.darkmode.enabled=false&website.scroll.enabled=false';		
-	
+	const DEFAULT_CDN_MASTER_BASEURI = 'https://cdn.startdir.de';
+	const DEFAULT_JS_CONFIG_QUERY = 'library.jquery.overwrite=false&DEBUG.enabled=true&website.consent.ads=false&website.consent.enabled=false&angularjs.html5mode.requireBase=false&angularjs.html5mode.rewriteLinks=false&angularjs.html5mode.enabled=false&website.worker.enabled=false&website.darkmode.enabled=false&website.scroll.enabled=false';
+
 	protected $cdnCacheDir;
 	protected $cdnCacheExpires;
-	
-	public function __construct(){	 		
+
+	public function __construct(){
 		$this->cdnCacheDir = OIDplus::baseConfig()->getValue('CDN_CACHE_DIRECTORY', OIDplus::localpath().'userdata/cache/cdn-assets/' );
-		$this->cdnCacheExpires = max(3 * 60 * 60, intval(OIDplus::baseConfig()->getValue('CDN_CACHE_EXPIRES', 24 * 60 * 60 )));	
+		$this->cdnCacheExpires = max(3 * 60 * 60, intval(OIDplus::baseConfig()->getValue('CDN_CACHE_EXPIRES', 24 * 60 * 60 )));
 	}
-	
-	
+
+
 	public function init($html = true): void {
-		
-		
-		
-		$io4Plugin = OIDplus::getPluginByOid("1.3.6.1.4.1.37476.9000.108.19361.24196");		         
+
+
+
+		$io4Plugin = OIDplus::getPluginByOid("1.3.6.1.4.1.37476.9000.108.19361.24196");
 		if (!is_null($io4Plugin) && \is_callable([$io4Plugin,'getWebfat']) ) {
-		   $io4Plugin->getWebfat(true,false);	              
+		   $io4Plugin->getWebfat(true,false);
 		}else{
 			throw new OIDplusException(sprintf('You have to install the dependencies of the plugin package %s via composer OR you need the plugin %s to be installed in OIDplus and its remote-autoloader enabled. Read about how to use composer with OIDplus at: https://weid.info/plus/ .', 'https://github.com/frdl/oidplus-frdlweb-rdap', 'https://github.com/frdl/oidplus-io4-bridge-plugin'));
-		}	
-		
+		}
+
 		OIDplus::config()->prepareConfigKey('FRDLWEB_CDN_RELATIVE_URI', 'The CDN base uri to the CDN/Proxy -Module. Example: "cdn/" or "assets/"', self::DEFAULT_CDN_BASEPATH, OIDplusConfig::PROTECTION_EDITABLE, function ($value) {
-		  
+
 			 	OIDplus::baseConfig()->setValue('FRDLWEB_CDN_RELATIVE_URI', $value );
-		});		
-		
+		});
+
 		OIDplus::config()->prepareConfigKey('FRDLWEB_DEFAULT_JS_CONFIG_QUERY', 'Set the config query for Frdlweb.js. Set to false to disable!  Help: https://frdl.de/blog/view/1208/webfanjs-frdlwebjs-configuration-parameters', self::DEFAULT_JS_CONFIG_QUERY, OIDplusConfig::PROTECTION_EDITABLE, function ($value) {
 			//if (($value != '') && !oid_valid_dotnotation($value, false, false, 1)) {
 		//		throw new OIDplusException("Please enter a valid OID in dot notation or nothing");
@@ -58,21 +58,21 @@ class OIDplusCDNProxyPagePlugin  extends OIDplusPagePluginPublic
 		});
 
 		OIDplus::config()->prepareConfigKey('FRDLWEB_CDN_PROXY_TARGET_BASE', 'The CDN base uri to get/proxy from/to. Can be e.g.: "https://cdn.startdir.de" or "https://cdn.frdl.de" or "https://cdn.webfan.de"', self::DEFAULT_CDN_MASTER_BASEURI, OIDplusConfig::PROTECTION_EDITABLE, function ($value) {
-			 
+
 			if(!in_array($value, ['https://cdn.startdir.de', 'https://cdn.frdl.de', 'https://cdn.webfan.de', ])){
 				throw new OIDplusException('Can be e.g.: "https://cdn.startdir.de" or "https://cdn.frdl.de" or "https://cdn.webfan.de"');
 			}
-			
+
 			OIDplus::baseConfig()->setValue('FRDLWEB_CDN_PROXY_TARGET_BASE', $value );
 		});
-		
+
 		if(true !== $html){
 			self::prune($this->cdnCacheDir, $this->cdnCacheExpires, true, false);
 		}
 	}
 
-	
-	
+
+
     public static function prune($dir, $limit, $skipDotFiles = true, $remove = false)
     {
         $iterator = new \DirectoryIterator($dir);
@@ -109,13 +109,13 @@ class OIDplusCDNProxyPagePlugin  extends OIDplusPagePluginPublic
         }
 
         return $c;
-    }	
-	
-	
+    }
+
+
 
 	protected function cdn_write_cache(string $out, string $cacheFile){
 		if(!is_dir(dirname($cacheFile))){
-		 mkdir(dirname($cacheFile), 0755, true);	
+		 mkdir(dirname($cacheFile), 0755, true);
 		}
 		file_put_contents($cacheFile, $out);
 	//	chmod($cacheFile, 0755);
@@ -128,25 +128,25 @@ class OIDplusCDNProxyPagePlugin  extends OIDplusPagePluginPublic
 	 * @return array|null
 	 */
 	protected function cache_read_serve(string $cacheFile, int $rdapCacheExpires){
-		if (file_exists($cacheFile) && ( $rdapCacheExpires < 1 || filemtime($cacheFile) >= time() - $rdapCacheExpires) ) { 
-			     $test=explode('.', $cacheFile);  
+		if (file_exists($cacheFile) && ( $rdapCacheExpires < 1 || filemtime($cacheFile) >= time() - $rdapCacheExpires) ) {
+			     $test=explode('.', $cacheFile);
 		          $ext = $test[count($test)-1];
 			      $e =[
 					'vue' => 'application/octet-stream',
-					  
-				  ]; 	  
+
+				  ];
             	\VtsBrowserDownload::output_file($cacheFile, isset($e[$ext]) ? $e[$ext] : '', 1);
 			return true;
 		}
-		return false;	
+		return false;
 	}
-	
+
    public function handle404(string $request): bool {
 	 	//die($request);
 	    $CDN_BASEPATH =	OIDplus::baseConfig()->getValue('FRDLWEB_CDN_RELATIVE_URI', self::DEFAULT_CDN_BASEPATH );
 	    $BASE_URI = rtrim(OIDplus::webpath(OIDplus::localpath(),OIDplus::PATH_ABSOLUTE_CANONICAL), '/ ').'/'.trim($CDN_BASEPATH, '/ ').'/';
 	   $rel_url_original =substr($_SERVER['REQUEST_URI'], strlen(OIDplus::webpath(null, OIDplus::PATH_RELATIVE_TO_ROOT)));
-	   
+
 	   /*
 	    if(!str_starts_with($request, $CDN_BASEPATH)){
 			print_r([$request, $CDN_BASEPATH, $rel_url_original]);
@@ -155,29 +155,29 @@ class OIDplusCDNProxyPagePlugin  extends OIDplusPagePluginPublic
 		}
 		*/
         $request = $rel_url_original;
-	   
+
 	   $baseHref = !isset($_SERVER['HTTP_X_FORWARDED_FOR']) ? (OIDplus::isSSL()
 															   ? 'https://'
 															   : 'http://')
 															  .$_SERVER['SERVER_NAME'].OIDplus::webpath(null, OIDplus::PATH_RELATIVE)
 		   : OIDplus::baseConfig()->getValue('CANONICAL_SYSTEM_URL', OIDplus::webpath(null, OIDplus::PATH_ABSOLUTE_CANONICAL) );
-	   
+
 	   $baseHref = rtrim($baseHref, '/ ').'/';
-	   ob_start();    
+	   ob_start();
 	   originHeaders();
 	   OIDplus::invoke_shutdown();
-	
-	   
+
+
 	    //$isCdnUri = preg_match('@^/'.preg_quote($request,'@').'/(.+)$@', $_SERVER['REQUEST_URI'], $m);
-	    $isCdnUri = str_starts_with($request, $CDN_BASEPATH) 
+	    $isCdnUri = str_starts_with($request, $CDN_BASEPATH)
 			&& (
 			preg_match('/'.preg_quote($CDN_BASEPATH,'/@').'(?P<oid>([0-9\.^\/]+))?(?P<uri>(.+))/', str_replace('oid:', '', $_SERVER['REQUEST_URI']), $matches)
 		//	|| preg_match('/'.preg_quote($CDN_BASEPATH,'/@').'(?P<id>([^\/]+))\/(?P<uri>(.+))/', $_SERVER['REQUEST_URI'], $matches)
 		 );
-	   
+
 	   if(!isset($matches))return false;
-	       $uri = ltrim($matches['uri'], '/ ');	  
-	       $p = explode('/', $uri);	  	   
+	       $uri = ltrim($matches['uri'], '/ ');
+	       $p = explode('/', $uri);
            $id = $p[0];
 	      if(str_starts_with($id, 'weid:')){
 	          $oid =  'oid:'.WeidOidConverter::weid2oid($id);
@@ -185,16 +185,16 @@ class OIDplusCDNProxyPagePlugin  extends OIDplusPagePluginPublic
 			  $oid =  'oid:'.trim($matches['oid'], '/ ');
 		  }else{
 			  $oid =false;
-		  }            
-		   
-		   $objGoto = OIDplusObject::findFitting($oid); 
-       
-	   
-	  		   
+		  }
+
+		   $objGoto = OIDplusObject::findFitting($oid);
+
+
+
 	        $iris = array();
 		   	$oids = array();
-		    
-		  if($isCdnUri && !$objGoto){ 
+
+		  if($isCdnUri && !$objGoto){
 			$last = false;
 		    $q = "select * from ###iri where ";
 		    $wheres = [];
@@ -211,7 +211,7 @@ class OIDplusCDNProxyPagePlugin  extends OIDplusPagePluginPublic
 			$l = false;
 			$u = '';
 			while ($row2 = $res2->fetch_array()) {
-				 
+
 				$o = OIDplusObject::findFitting($row2['oid']);
 				if($o){
 					$u.=$row2['name'].'/';
@@ -223,42 +223,42 @@ class OIDplusCDNProxyPagePlugin  extends OIDplusPagePluginPublic
 				//}elseif(!str_starts_with($row2['oid'], $last)){
 					//die('invalid iri');
 				//}
-			} 
+			}
 		      $l = OIDplusObject::findFitting($last);
 			  $objGotoLastFromUri =  count($oids)>0 && $last === $oids[count($oids)-1]
 				  ? OIDplusObject::findFitting($oids[count($oids)-1])
-				  : false; 
-			  
+				  : false;
+
 			  if($objGotoLastFromUri && $l && $o
 				&&  strtolower($objGotoLastFromUri->getIriNotation(false)) === strtolower($l->getIriNotation(false))
-				&&  strtolower($o->getIriNotation(false)) === strtolower($l->getIriNotation(false)) 
-				&&  '/'.strtolower($uri) === strtolower($objGotoLastFromUri->getIriNotation(false).'/'.$p[count($p)-1]) 
-				 ){ 
-				  $objGoto = OIDplusObject::findFitting($objGotoLastFromUri->nodeId(true)); 
+				&&  strtolower($o->getIriNotation(false)) === strtolower($l->getIriNotation(false))
+				&&  '/'.strtolower($uri) === strtolower($objGotoLastFromUri->getIriNotation(false).'/'.$p[count($p)-1])
+				 ){
+				  $objGoto = OIDplusObject::findFitting($objGotoLastFromUri->nodeId(true));
 			  }
-			  
-			
-			  
-			  
-			  
-		   }//!$objGoto -> iris	   
-	 
+
+
+
+
+
+		   }//!$objGoto -> iris
+
 		   if(!$objGoto){
-		 	  $objGoto = OIDplusObject::findFitting($id); 
-		   }	   
+		 	  $objGoto = OIDplusObject::findFitting($id);
+		   }
 		    $oid = $objGoto ? $objGoto->nodeId(false) : $oid;
 	        $oidWithNs = 'oid:'.$oid;
 		    $id = $objGoto ? $objGoto->nodeId(true) : false;
-		   
-		    $file =count($p) > 0 ? $p[count($p)-1] : false;
-	   
- 		   if(!$objGoto){
-			  $objGoto = OIDplusObject::findFitting($uri); 
-		   }		   
-	   
 
-	   
-	   
+		    $file =count($p) > 0 ? $p[count($p)-1] : false;
+
+ 		   if(!$objGoto){
+			  $objGoto = OIDplusObject::findFitting($uri);
+		   }
+
+
+
+
 	   if ($isCdnUri || is_object($objGoto)) {
 		   //set_exception_handler(array(OIDplusGui::class, 'html_exception_handler'));
 
@@ -266,126 +266,126 @@ class OIDplusCDNProxyPagePlugin  extends OIDplusPagePluginPublic
 		   //die(OIDplusObject::exists($id).' - '.OIDplusObject::exists('oid:'.$oid));
 
 
-		    
+
 		    if($id
 			    && is_object($objGoto)
-			     && ( OIDplusObject::exists($id) 
+			     && ( OIDplusObject::exists($id)
 				//	 && OIDplusObject::exists('oid:'.$oid)
 					)
 			  //  && !empty($file)
 			    && class_exists(OIDplusPagePublicAttachments::class)
-				&& !OIDplus::baseConfig()->getValue('DISABLE_PLUGIN_1.3.6.1.4.1.37476.2.5.2.4.1.95', false) 
-			   
-			   ){	
+				&& !OIDplus::baseConfig()->getValue('DISABLE_PLUGIN_1.3.6.1.4.1.37476.2.5.2.4.1.95', false)
+
+			   ){
 				$uploaddir = OIDplusPagePublicAttachments::getUploadDir($id);
-				 
+
 				if((false===$file || empty($file) || ''===$file) || '/' === substr($uri, strlen($uri)-1,1) ){
-				  $files = glob($uploaddir 
+				  $files = glob($uploaddir
 								. DIRECTORY_SEPARATOR
 								//  .'/'
 								 . '*');
-			 
-					
-					
-					
-					
-					
+
+
+
+
+
+
 					  //$linkDirectory = $BASE_URI.$objGoto->getIriNotation(false).'/';
 					  $linkDirectory = $BASE_URI.$this->getObjectsWebpathNotation($objGoto).'/';
 					  $permaLinkDirectory = $BASE_URI.$id.'/';
-					
+
 					  $links = [];
-						foreach($files as $f){					 
+						foreach($files as $f){
 							$links[$BASE_URI
 						             .trim(strtolower($this->getObjectsWebpathNotation($objGoto)), '/ ')
 								 //  .$objGoto->getIriNotation(false)
-								.'/'.basename($f) ] = 
+								.'/'.basename($f) ] =
 								$BASE_URI
 						      //.strtolower($objGoto->getIriNotation(false))
 								  .trim($this->getObjectsWebpathNotation($objGoto), '/ ')
-								.'/'.basename($f);					
-						}		
-					
+								.'/'.basename($f);
+						}
+
 					$html = '';
 					$html.='<h1>Files of '.$objGoto->getTitle().'</h1>';
-					
+
 					if($objGoto->userHasReadRights() ){
-					
-					$html.='<ul>'; 
+
+					$html.='<ul>';
 					 foreach($links as $normalized => $link){
 						 $html.=sprintf('<li><a href="%s" target="_blank">%s</a> : <a href="%s" target="_blank">%s</a>'
 										.' <a href="%s" target="_blank">%s</a></li>',
 										$link, basename($link),
-										$normalized, 'normalized/pretty-url', 
+										$normalized, 'normalized/pretty-url',
 										$permaLinkDirectory.basename($link), 'OID-/Permalink');
 					 }
 					$html.='</ul>';
 					}else{
 						$html.=' - You have no access to read the file list, please login!';
 					}
-					
-					
+
+
 					$pageHTML = $this
-						// OIDplus::gui() 
+						// OIDplus::gui()
 						->showMainPage($objGoto->getTitle(),
-																 'List files of '.$id, 
+																 'List files of '.$id,
 																  '',//string $static_icon,
 																 $html,
 																 [
-																 '<base href="'.$baseHref.'">' , 
-																										
-																 ], 
+																 '<base href="'.$baseHref.'">' ,
+
+																 ],
 																 $id);
 					echo $pageHTML;
 					// return true;
 					die();
 				}
-				
-				
-					$filename =$file;
-	
 
-					
-			
+
+					$filename =$file;
+
+
+
+
 				$local_file = $uploaddir.'/'.$filename;
 
-           	   if ($id && is_object($objGoto) && ( OIDplusObject::exists($id) 
+           	   if ($id && is_object($objGoto) && ( OIDplusObject::exists($id)
 												//  && OIDplusObject::exists($oidWithNs)
 												 ) && !file_exists($local_file)) {
 		             http_response_code(404);
- 
-				   $pageHTML = // OIDplus::gui() 
+
+				   $pageHTML = // OIDplus::gui()
 					   $this
 					 //  ->showSimplePage(
 					   ->showMainPage(
-					   _L('Not found'), 
+					   _L('Not found'),
 												   _L(sprintf('The file "%s" does not exist in this directory!'.$oidWithNs,$filename)),
 												   '',
 												   (new OIDplusException(_L(sprintf('The file %s does not exist',$filename))))->getMessage(),
 												    [
-																 '<base href="'.$baseHref.'" />', 
+																 '<base href="'.$baseHref.'" />',
 																 ],
-					   $id												 
+					   $id
 				   );
-				   				
+
 				   echo $pageHTML;
 					// return true;
 					die();
 	            }elseif($id && is_object($objGoto) && ( OIDplusObject::exists($id)
 													 //  && OIDplusObject::exists('oid:'.$oid)
-													  ) && file_exists($local_file)){//404 from local OID attachments dir	 
+													  ) && file_exists($local_file)){//404 from local OID attachments dir
 
 				   $filename = basename($local_file);
-					if (strpos($filename, '/') !== false) throw new OIDplusException(_L('Illegal file name'));	
-			    	if (strpos($filename, '\\') !== false) throw new OIDplusException(_L('Illegal file name'));	
-				    if (strpos($filename, '..') !== false) throw new OIDplusException(_L('Illegal file name'));	
-				    if (strpos($filename, chr(0)) !== false) throw new OIDplusException(_L('Illegal file name'));			   
-				  
+					if (strpos($filename, '/') !== false) throw new OIDplusException(_L('Illegal file name'));
+			    	if (strpos($filename, '\\') !== false) throw new OIDplusException(_L('Illegal file name'));
+				    if (strpos($filename, '..') !== false) throw new OIDplusException(_L('Illegal file name'));
+				    if (strpos($filename, chr(0)) !== false) throw new OIDplusException(_L('Illegal file name'));
+
 				   if(!$objGoto->userHasReadRights() ){
 					    throw new OIDplusException(_L(sprintf('You have no access to %s, please login!',$filename)));
-				   }				   
-				   
-	   				
+				   }
+
+
 				  if(!$this->cache_read_serve($local_file, -1)){
 					 throw new OIDplusException(_L(sprintf('The file %s is not available [1].',$filename)));
 				 }else{
@@ -393,126 +393,126 @@ class OIDplusCDNProxyPagePlugin  extends OIDplusPagePluginPublic
 				 }
 			   }
 			}//$objGoto
-		   
-	 
-		     
-		   
+
+
+
+
 		   $CDN_TARGET_BASE =	OIDplus::baseConfig()->getValue('FRDLWEB_CDN_PROXY_TARGET_BASE', self::DEFAULT_CDN_MASTER_BASEURI );
 			//	$url = rtrim($CDN_TARGET_BASE, '/ ').'/'.$uri.'?'.$_SERVER['QUERY_STRING'];
 				$q = $_GET;
 				unset($q['h404']);
 		        ksort($q);
 				$url = rtrim($CDN_TARGET_BASE, '/ ').'/'.$uri.'?'. \http_build_query($q, '', '&', \PHP_QUERY_RFC3986);
-		   
+
 		        $hp = json_encode($q);
-		   
+
 		    $file = $this->cdnCacheDir . str_replace('/', \DIRECTORY_SEPARATOR, explode('?', $uri)[0]);
 		    $filename = 'h-'.sha1($hp).'-l'.strlen($hp).'.'.basename($file);
-		   
-		   	$test=explode('.', $filename);  
+
+		   	$test=explode('.', $filename);
 		    $ext = $test[count($test)-1];
-		   
-		   if('php' === $ext){	
+
+		   if('php' === $ext){
 			   throw new OIDplusException(_L(sprintf('The file %s is not wanted!',$filename)));
 		   }
-		   
-					if (strpos($filename, '/') !== false) throw new OIDplusException(_L('Illegal file name'));	
-			    	if (strpos($filename, '\\') !== false) throw new OIDplusException(_L('Illegal file name'));	
-				    if (strpos($file, '..') !== false) throw new OIDplusException(_L('Illegal file name'));	
-				    if (strpos($filename, chr(0)) !== false) throw new OIDplusException(_L('Illegal file name'));			   
-		   
-		   
+
+					if (strpos($filename, '/') !== false) throw new OIDplusException(_L('Illegal file name'));
+			    	if (strpos($filename, '\\') !== false) throw new OIDplusException(_L('Illegal file name'));
+				    if (strpos($file, '..') !== false) throw new OIDplusException(_L('Illegal file name'));
+				    if (strpos($filename, chr(0)) !== false) throw new OIDplusException(_L('Illegal file name'));
+
+
 		    if(!$this->cache_read_serve($file,intval( $this->cdnCacheExpires ) )){
 
 				//die($target);
-				$opts =[     
-					'http'=>[          
-						'method'=>$_SERVER['REQUEST_METHOD'],           
-						//'header'=>"Accept-Encoding: deflate, gzip\r\n",           
-					],	
+				$opts =[
+					'http'=>[
+						'method'=>$_SERVER['REQUEST_METHOD'],
+						//'header'=>"Accept-Encoding: deflate, gzip\r\n",
+					],
 				];
-  
+
 				$context = stream_context_create($opts);
 
-				// Open the file using the HTTP headers set above   
+				// Open the file using the HTTP headers set above
 				$result = @file_get_contents($url, false, $context);
-				if(false === $result){      
-					http_response_code(404); 
-				   $pageHTML = // OIDplus::gui() 
+				if(false === $result){
+					http_response_code(404);
+				   $pageHTML = // OIDplus::gui()
 					   $this
 					 //  ->showSimplePage(
 					   ->showMainPage(
-					   _L('Not found'), 
+					   _L('Not found'),
 												   _L(sprintf('The file "%s" does not exist at "%s"!',$filename, $url)),
 												   '',
 												   (new OIDplusException(_L(sprintf('The file %s does not exist',$filename))))->getMessage(),
 												    [
-																 '<base href="'.$baseHref.'" />', 
+																 '<base href="'.$baseHref.'" />',
 																 ]
 												  );
-				   				
+
 				   echo $pageHTML;
 					// return true;
 					die();
 				}//404 from cdn
-	
-       
+
+
 			//	foreach($http_response_header as $i => $header){
-					//header($header);      
+					//header($header);
 			//	}
-	
+
 				//file_put_contents($file, $result);
 				 $this->cdn_write_cache($result, $file);
-				 
+
 				 if(!$this->cache_read_serve($file, $this->cdnCacheExpires)){
 					 throw new OIDplusException(_L(sprintf('The file %s is not available [%s].',$filename, __LINE__)));
 				 }else{
 					 die();
 				 }
 			}
-	
-		   
+
+
 	   }
-	   
-	   
+
+
     return false;
    }
 
-	
-	
-	
-	
+
+
+
+
 	public function getObjectsWebpathNotation($objGoto){
 		if(is_callable([$objGoto, 'getIriNotation'])){
 			return $objGoto->getIriNotation(false);
 		}
-		
+
 		$del = substr( $objGoto->crudInsertPrefix(), -1);
-		
+
 		$str = str_replace($del, '/', $objGoto->nodeId(false));
 		return $str;
 	}
-	
+
 
 	public function modifyContent($id, &$title, &$icon, &$text): void {
-			  
+
 		$CDN_BASEPATH =	OIDplus::baseConfig()->getValue('FRDLWEB_CDN_RELATIVE_URI', self::DEFAULT_CDN_BASEPATH );
 	    $BASE_URI = rtrim(OIDplus::webpath(OIDplus::localpath(),OIDplus::PATH_ABSOLUTE_CANONICAL), '/ ').'/'.trim($CDN_BASEPATH, '/ ').'/';
-		
+
 		    $payload = '<br /> <a href="'.$BASE_URI.$id.'/" class="gray_footer_font">'._L('CDN/Files').'</a>';
 
-		$text = str_replace('<!-- MARKER 6 -->', '<!-- MARKER 6 -->'.$payload, $text);	 
+		$text = str_replace('<!-- MARKER 6 -->', '<!-- MARKER 6 -->'.$payload, $text);
 
 	}
 
- 
 
- 
+
+
  	// public function action(string $actionID, array $params): array {
    //       return parent::action($actionID, $params);
  	// }
 
- 
+
 
 
 
@@ -613,26 +613,26 @@ class OIDplusCDNProxyPagePlugin  extends OIDplusPagePluginPublic
 		/*
 			$head_elems[] = '<link rel="canonical" href="'.htmlentities(OIDplus::canonicalURL().OIDplus::webpath(null, OIDplus::PATH_ABSOLUTE_CANONICAL)).'">';
 			*/
-						$head_elems[] = '<link rel="canonical" href="'.rtrim(OIDplus::webpath(null, 
+						$head_elems[] = '<link rel="canonical" href="'.rtrim(OIDplus::webpath(null,
                                OIDplus::PATH_ABSOLUTE_CANONICAL),'/ ').$_SERVER['REQUEST_URI']
 							.'">';
 		}
 
 		//$files[] = 'var csrf_token = '.js_escape($_COOKIE['csrf_token'] ?? '').';';
 		//$files[] = 'var samesite_policy = '.js_escape(OIDplus::baseConfig()->getValue('COOKIE_SAMESITE_POLICY','Strict')).';';
-		$head_elems[] = '<script>var csrf_token = '.js_escape($_COOKIE['csrf_token'] ?? '').';</script>';		
-		$head_elems[] = '<script>var csrf_token_weak = '.js_escape($_COOKIE['csrf_token_weak'] ?? '').';</script>';		
-		$head_elems[] = 
-			'<script>var samesite_policy = '.js_escape(OIDplus::baseConfig()->getValue('COOKIE_SAMESITE_POLICY','Strict')).';</script>';		
+		$head_elems[] = '<script>var csrf_token = '.js_escape($_COOKIE['csrf_token'] ?? '').';</script>';
+		$head_elems[] = '<script>var csrf_token_weak = '.js_escape($_COOKIE['csrf_token_weak'] ?? '').';</script>';
+		$head_elems[] =
+			'<script>var samesite_policy = '.js_escape(OIDplus::baseConfig()->getValue('COOKIE_SAMESITE_POLICY','Strict')).';</script>';
 		return $head_elems;
-	}	
-	
-	
+	}
+
+
 	public function showMainPage(string $page_title_1, string $page_title_2, string $static_icon, string $static_content, array $extra_head_tags=array(), string $static_node_id=''): string {
-		
-		
+
+
 		$_REQUEST['goto'] = $static_node_id;
-		
+
    if (!isset($_COOKIE['csrf_token'])) {
 	// This is the main CSRF token used for AJAX.
 	$token = OIDplus::authUtils()->genCSRFToken();
@@ -646,8 +646,8 @@ class OIDplusCDNProxyPagePlugin  extends OIDplusPagePluginPublic
 	$token = OIDplus::authUtils()->genCSRFToken();
 	OIDplus::cookieUtils()->setcookie('csrf_token_weak', $token, 0, false, 'Lax');
 	unset($token);
-  }	   		
-		
+  }
+
 	//	$head_elems = (new OIDplusGui())->getCommonHeadElems($page_title_1);
 		$head_elems = $this->getCommonHeadElems($page_title_1);
 		$head_elems = array_merge($extra_head_tags, $head_elems);
@@ -705,7 +705,7 @@ class OIDplusCDNProxyPagePlugin  extends OIDplusPagePluginPublic
 		$out .= '</div>';
 
 		$out .= '</div>';
- 
+
 		$out .= OIDplus::gui()->getLanguageBox($static_node_id, true);
 
 		$out .= '<div id="gotobox">';
@@ -713,7 +713,7 @@ class OIDplusCDNProxyPagePlugin  extends OIDplusPagePluginPublic
 		$out .= '<input type="button" value="'._L('Go').'" onclick="gotoButtonClicked()" id="gotobutton">';
 		$out .= '</div>';
 
-	
+
 		$out .= '<div id="oidtree" class="borderbox">';
 		//$out .= '<noscript>';
 		//$out .= '<p><b>'._L('Please enable JavaScript to use all features').'</b></p>';
@@ -721,8 +721,8 @@ class OIDplusCDNProxyPagePlugin  extends OIDplusPagePluginPublic
 		$out .= OIDplus::menuUtils()->nonjs_menu();
 		$out .= '</div>';
 /*	*/
-		
-		
+
+
 		$out .= '</div>';
 
 		$out .= "\n</body>\n";
@@ -738,8 +738,8 @@ class OIDplusCDNProxyPagePlugin  extends OIDplusPagePluginPublic
 		return $out;
 	}
 
-	
-	
+
+
    public function gui($id, &$out, &$handled): void {
 		 if('oidplus:home'===$id){
 			 /*
@@ -750,42 +750,42 @@ class OIDplusCDNProxyPagePlugin  extends OIDplusPagePluginPublic
 		     );
 			 */
 			 header('Location: '.OIDplus::webpath(null,OIDplus::PATH_ABSOLUTE_CANONICAL) );
-			 $io4Plugin = OIDplus::getPluginByOid("1.3.6.1.4.1.37476.9000.108.19361.24196");		
-			 $out['text']  = $io4Plugin->handle404('/'); 
+			 $io4Plugin = OIDplus::getPluginByOid("1.3.6.1.4.1.37476.9000.108.19361.24196");
+			 $out['text']  = $io4Plugin->handle404('/');
 			 $handled = true;
 			// flush();
 			//  die($out['text']);
-		 }  	   
+		 }
      }
-	
-	
- 
+
+
+
 	public function tree(array &$json, string $ra_email=null, bool $nonjs=false, string $req_goto=''): bool {
-	
+
 		if (file_exists(__DIR__ . '/treeicon.png')) {
 			$tree_icon = OIDplus::webpath(__DIR__) . 'treeicon.png';
 		} else {
 			$tree_icon = null; // default icon (folder)
 		}
-		
+
 		 $json[] = array(
 		    'id' => 'oidplus:home',
 			'icon' => $tree_icon,
 			// 'a_attr'=>[
-			// 	 'href'=>OIDplus::webpath(null,OIDplus::PATH_ABSOLUTE_CANONICAL),				 
+			// 	 'href'=>OIDplus::webpath(null,OIDplus::PATH_ABSOLUTE_CANONICAL),
 			 // ],
-			 // 'href'=>OIDplus::webpath(null,OIDplus::PATH_ABSOLUTE_CANONICAL),	
-			'text' => _L('Home'), 
-		);		
+			 // 'href'=>OIDplus::webpath(null,OIDplus::PATH_ABSOLUTE_CANONICAL),
+			'text' => _L('Home'),
+		);
 		 /**/
 
 	  	$json[] = array(
 			'id' => 'oidplus:system',
 			//'icon' => $tree_icon,
-			'text' => _L('Registry'), 
-		);	
-		
-		 
+			'text' => _L('Registry'),
+		);
+
+
 	//	if (!OIDplus::authUtils()->isAdminLoggedIn()) return true;
 
 
@@ -793,10 +793,10 @@ class OIDplusCDNProxyPagePlugin  extends OIDplusPagePluginPublic
 		$json[] = array(
 			'id' => self::PAGE_ID_COMPOSER,
 			//'icon' => $tree_icon,
-			'text' => _L('Composer Plugins'), 
+			'text' => _L('Composer Plugins'),
 		);
-		
-		
+
+
 		$json[] = array(
 			'id' => self::PAGE_ID_WEBFAT,
 			//'icon' => $tree_icon,
@@ -807,22 +807,22 @@ class OIDplusCDNProxyPagePlugin  extends OIDplusPagePluginPublic
 		$json[] = array(
 			'id' => self::PAGE_ID_BRIDGE,
 			//'icon' => $tree_icon,
-			'text' => _L('Webfan IO4 Bridge'), 
+			'text' => _L('Webfan IO4 Bridge'),
 		);
 */
-		return true;		
+		return true;
 	}
-	
-	
+
+
 	 public function publicSitemap(&$out): void {
-		//$out[] = OIDplus::getSystemUrl().'?goto='.urlencode('com.frdlweb.freeweid'); 
-	  //	 $out[] = OIDplus::getSystemUrl().'?goto='.urlencode('oidplus:system'); 
-		//  $out[] = OIDplus::getSystemUrl(); 
+		//$out[] = OIDplus::getSystemUrl().'?goto='.urlencode('com.frdlweb.freeweid');
+	  //	 $out[] = OIDplus::getSystemUrl().'?goto='.urlencode('oidplus:system');
+		//  $out[] = OIDplus::getSystemUrl();
 	 }
-	
-	
-/*	
-	public function tree(array &$json, ?string $ra_email = null, bool $nonjs = false, string $req_goto = ''): bool { 
+
+
+/*
+	public function tree(array &$json, ?string $ra_email = null, bool $nonjs = false, string $req_goto = ''): bool {
 
 		if (file_exists(__DIR__ . '/treeicon.png')) {
 			$tree_icon = OIDplus::webpath(__DIR__) . 'treeicon.png';
@@ -852,7 +852,7 @@ class OIDplusCDNProxyPagePlugin  extends OIDplusPagePluginPublic
 				} while ($obj = $obj->getParent());
 				*/
 
-				 
+
 				while ($obj = $obj->getParent()) {
 					$ary[] = $obj->nodeId();
 				}
@@ -862,6 +862,6 @@ class OIDplusCDNProxyPagePlugin  extends OIDplusPagePluginPublic
 		}
 		return $ary;
 	}
-	
-	 
+
+
 }

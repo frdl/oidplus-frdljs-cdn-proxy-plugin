@@ -11,7 +11,8 @@
 			"oid": "1.3.6.1.4.1.37476.9000.108.19361.16043"
 		},
 		"php": {
-			"mainclass": "Frdlweb\\OIDplus\\OIDplusCDNProxyPagePlugin"
+			"namespace": "Frdlweb\\OIDplus\\Plugins\\PublicPages\\CDNProxy",
+			"mainclass": "OIDplusCDNProxyPagePlugin"
 		},
 		"css": [],
 		"js": [
