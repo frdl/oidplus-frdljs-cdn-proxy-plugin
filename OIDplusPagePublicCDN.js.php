@@ -1,10 +1,8 @@
 <?php
-namespace Frdlweb\OIDplus\Js;
 
-use Frdlweb\OIDplus\OIDplusCDNProxyPagePlugin;
-use ViaThinkSoft\OIDplus\OIDplus;
-use ViaThinkSoft\OIDplus\OIDplusGui;
-use ViaThinkSoft\OIDplus\OIDplusException; 
+use ViaThinkSoft\OIDplus\Core\OIDplus;
+use ViaThinkSoft\OIDplus\Core\OIDplusGui;
+use ViaThinkSoft\OIDplus\Plugins\frdl\publicPages\oidplus_frdljs_cdn_proxy_plugin\OIDplusCDNProxyPagePlugin;
 
 require_once __DIR__ . '/../../../../includes/oidplus.inc.php';
 
@@ -42,6 +40,10 @@ if (OIDplus::baseConfig()->getValue('DISABLE_PLUGIN_Frdlweb\OIDplus\OIDplusCDNPr
 echo frdlwebJS();
 
 
+/**
+ * @return false|string
+ * @throws \ViaThinkSoft\OIDplus\Core\OIDplusException
+ */
 function frdlwebJS(){
  $FRDLWEB_JS_CONFIG_QUERY =	OIDplus::baseConfig()->getValue('FRDLWEB_DEFAULT_JS_CONFIG_QUERY', OIDplusCDNProxyPagePlugin::DEFAULT_JS_CONFIG_QUERY );
 	

@@ -13,6 +13,6 @@ If [this package](https://github.com/frdl/oiplus-composer-plugin) is installed i
 `composer require frdl/oidplus-frdljs-cdn-proxy-plugin`
 
 ### Manually
-Create the directory
-`<OIDplus_ROOT>/plugins/frdl/publicPages/cdn/`
+Create the directory (exactly this name! no hyphens!)
+`<OIDplus_ROOT>/plugins/frdl/publicPages/oidplus_frdljs_cdn_proxy_plugin/`
 Unzip this git archive into this directory.

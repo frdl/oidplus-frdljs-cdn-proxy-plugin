@@ -1,22 +1,16 @@
 <?php
 
 
-namespace Frdlweb\OIDplus;
+namespace ViaThinkSoft\OIDplus\Plugins\frdl\publicPages\oidplus_frdljs_cdn_proxy_plugin;
 
- 
-
-use ViaThinkSoft\OIDplus\OIDplusGui;
-use ViaThinkSoft\OIDplus\OIDplusPagePublicAttachments;
-use ViaThinkSoft\OIDplus\INTF_OID_1_3_6_1_4_1_37476_2_5_2_3_2;
-use ViaThinkSoft\OIDplus\OIDplus;
-use ViaThinkSoft\OIDplus\OIDplusConfig;
-use ViaThinkSoft\OIDplus\OIDplusObjectTypePlugin;
-use ViaThinkSoft\OIDplus\OIDplusPagePluginPublic;
-use ViaThinkSoft\OIDplus\OIDplusObject;
-use ViaThinkSoft\OIDplus\OIDplusException;
-use ViaThinkSoft\OIDplus\OIDplusOID;
-use ViaThinkSoft\OIDplus\OIDplusRA;
-use ViaThinkSoft\OIDplus\OIDplusNaturalSortedQueryResult;
+use ViaThinkSoft\OIDplus\Core\OIDplus;
+use ViaThinkSoft\OIDplus\Core\OIDplusConfig;
+use ViaThinkSoft\OIDplus\Core\OIDplusException;
+use ViaThinkSoft\OIDplus\Core\OIDplusObject;
+use ViaThinkSoft\OIDplus\Core\OIDplusPagePluginPublic;
+use ViaThinkSoft\OIDplus\Plugins\viathinksoft\objectTypes\oid\WeidOidConverter;
+use ViaThinkSoft\OIDplus\Plugins\viathinksoft\publicPages\n000_objects\INTF_OID_1_3_6_1_4_1_37476_2_5_2_3_2;
+use ViaThinkSoft\OIDplus\Plugins\viathinksoft\publicPages\n095_attachments\OIDplusPagePublicAttachments;
 
 
 \defined('INSIDE_OIDPLUS') or die;
@@ -40,7 +34,7 @@ class OIDplusCDNProxyPagePlugin  extends OIDplusPagePluginPublic
 	}
 	
 	
-	public function init($html = true) {
+	public function init($html = true): void {
 		
 		
 		
@@ -186,7 +180,7 @@ class OIDplusCDNProxyPagePlugin  extends OIDplusPagePluginPublic
 	       $p = explode('/', $uri);	  	   
            $id = $p[0];
 	      if(str_starts_with($id, 'weid:')){
-	          $oid =  'oid:'.\Frdl\Weid\WeidOidConverter::weid2oid($id);
+	          $oid =  'oid:'.WeidOidConverter::weid2oid($id);
 		   }elseif(!empty($matches['oid'])){
 			  $oid =  'oid:'.trim($matches['oid'], '/ ');
 		  }else{
@@ -395,7 +389,7 @@ class OIDplusCDNProxyPagePlugin  extends OIDplusPagePluginPublic
 				  if(!$this->cache_read_serve($local_file, -1)){
 					 throw new OIDplusException(_L(sprintf('The file %s is not available [1].',$filename)));
 				 }else{
-					 return die(); 
+					  die();
 				 }
 			   }
 			}//$objGoto
@@ -473,7 +467,7 @@ class OIDplusCDNProxyPagePlugin  extends OIDplusPagePluginPublic
 				 if(!$this->cache_read_serve($file, $this->cdnCacheExpires)){
 					 throw new OIDplusException(_L(sprintf('The file %s is not available [%s].',$filename, __LINE__)));
 				 }else{
-					 return die(); 
+					 die();
 				 }
 			}
 	
@@ -500,7 +494,7 @@ class OIDplusCDNProxyPagePlugin  extends OIDplusPagePluginPublic
 	}
 	
 
-	public function modifyContent($id, &$title, &$icon, &$text) {		
+	public function modifyContent($id, &$title, &$icon, &$text): void {
 			  
 		$CDN_BASEPATH =	OIDplus::baseConfig()->getValue('FRDLWEB_CDN_RELATIVE_URI', self::DEFAULT_CDN_BASEPATH );
 	    $BASE_URI = rtrim(OIDplus::webpath(OIDplus::localpath(),OIDplus::PATH_ABSOLUTE_CANONICAL), '/ ').'/'.trim($CDN_BASEPATH, '/ ').'/';
@@ -746,7 +740,7 @@ class OIDplusCDNProxyPagePlugin  extends OIDplusPagePluginPublic
 
 	
 	
-   public function gui($id, &$out, &$handled) {
+   public function gui($id, &$out, &$handled): void {
 		 if('oidplus:home'===$id){
 			 /*
 			 header('Location: '.OIDplus::webpath(null,OIDplus::PATH_ABSOLUTE_CANONICAL) );
@@ -820,7 +814,7 @@ class OIDplusCDNProxyPagePlugin  extends OIDplusPagePluginPublic
 	}
 	
 	
-	 public function publicSitemap(&$out) { 
+	 public function publicSitemap(&$out): void {
 		//$out[] = OIDplus::getSystemUrl().'?goto='.urlencode('com.frdlweb.freeweid'); 
 	  //	 $out[] = OIDplus::getSystemUrl().'?goto='.urlencode('oidplus:system'); 
 		//  $out[] = OIDplus::getSystemUrl(); 
