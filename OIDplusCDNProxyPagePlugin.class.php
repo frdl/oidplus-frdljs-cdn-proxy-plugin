@@ -3,14 +3,16 @@
 
 namespace Frdlweb\OIDplus\Plugins\PublicPages\CDNProxy;
 
+
+
 use ViaThinkSoft\OIDplus\Core\OIDplus;
 use ViaThinkSoft\OIDplus\Core\OIDplusConfig;
-use ViaThinkSoft\OIDplus\Core\OIDplusException;
-use ViaThinkSoft\OIDplus\Core\OIDplusObject;
 use ViaThinkSoft\OIDplus\Core\OIDplusPagePluginPublic;
+use ViaThinkSoft\OIDplus\Core\OIDplusObject;
+use ViaThinkSoft\OIDplus\Core\OIDplusException;
 use ViaThinkSoft\OIDplus\Plugins\ObjectTypes\OID\WeidOidConverter;
-use ViaThinkSoft\OIDplus\Plugins\PublicPages\Objects\INTF_OID_1_3_6_1_4_1_37476_2_5_2_3_2;
 use ViaThinkSoft\OIDplus\Plugins\PublicPages\Attachments\OIDplusPagePublicAttachments;
+use ViaThinkSoft\OIDplus\Plugins\PublicPages\Objects\INTF_OID_1_3_6_1_4_1_37476_2_5_2_3_2;
 
 
 \defined('INSIDE_OIDPLUS') or die;
@@ -54,7 +56,11 @@ class OIDplusCDNProxyPagePlugin  extends OIDplusPagePluginPublic
 			//if (($value != '') && !oid_valid_dotnotation($value, false, false, 1)) {
 		//		throw new OIDplusException("Please enter a valid OID in dot notation or nothing");
 		//	}
-			OIDplus::baseConfig()->setValue('FRDLWEB_DEFAULT_JS_CONFIG_QUERY', $value );
+			 $file = __DIR__.\DIRECTORY_SEPARATOR.'webfan.js~cache.js';
+			if(file_exists($file)){
+			 unlink($file);
+			}
+		//	OIDplus::baseConfig()->setValue('FRDLWEB_DEFAULT_JS_CONFIG_QUERY', $value );
 		});
 
 		OIDplus::config()->prepareConfigKey('FRDLWEB_CDN_PROXY_TARGET_BASE', 'The CDN base uri to get/proxy from/to. Can be e.g.: "https://cdn.startdir.de" or "https://cdn.frdl.de" or "https://cdn.webfan.de"', self::DEFAULT_CDN_MASTER_BASEURI, OIDplusConfig::PROTECTION_EDITABLE, function ($value) {
@@ -63,7 +69,12 @@ class OIDplusCDNProxyPagePlugin  extends OIDplusPagePluginPublic
 				throw new OIDplusException('Can be e.g.: "https://cdn.startdir.de" or "https://cdn.frdl.de" or "https://cdn.webfan.de"');
 			}
 
-			OIDplus::baseConfig()->setValue('FRDLWEB_CDN_PROXY_TARGET_BASE', $value );
+
+			$file = __DIR__.\DIRECTORY_SEPARATOR.'webfan.js~cache.js';
+			if(file_exists($file)){
+			 unlink($file);
+			}
+		//	OIDplus::baseConfig()->setValue('FRDLWEB_CDN_PROXY_TARGET_BASE', $value );
 		});
 
 		if(true !== $html){
@@ -274,7 +285,7 @@ class OIDplusCDNProxyPagePlugin  extends OIDplusPagePluginPublic
 					)
 			  //  && !empty($file)
 			    && class_exists(OIDplusPagePublicAttachments::class)
-				&& !OIDplus::baseConfig()->getValue('DISABLE_PLUGIN_1.3.6.1.4.1.37476.2.5.2.4.1.95', false)
+				&& !OIDplus::baseConfig()->getValue('DISABLE_PLUGIN_1.3.6.1.4.1.37476.2.5.2.4.1.95', false)  // OIDplusPagePublicAttachments disabled?
 
 			   ){
 				$uploaddir = OIDplusPagePublicAttachments::getUploadDir($id);
@@ -389,7 +400,8 @@ class OIDplusCDNProxyPagePlugin  extends OIDplusPagePluginPublic
 				  if(!$this->cache_read_serve($local_file, -1)){
 					 throw new OIDplusException(_L(sprintf('The file %s is not available [1].',$filename)));
 				 }else{
-					  die();
+					 die();
+					 return false;
 				 }
 			   }
 			}//$objGoto
@@ -467,7 +479,7 @@ class OIDplusCDNProxyPagePlugin  extends OIDplusPagePluginPublic
 				 if(!$this->cache_read_serve($file, $this->cdnCacheExpires)){
 					 throw new OIDplusException(_L(sprintf('The file %s is not available [%s].',$filename, __LINE__)));
 				 }else{
-					 die();
+					 return die();
 				 }
 			}
 
@@ -753,8 +765,8 @@ class OIDplusCDNProxyPagePlugin  extends OIDplusPagePluginPublic
 			 $io4Plugin = OIDplus::getPluginByOid("1.3.6.1.4.1.37476.9000.108.19361.24196");
 			 $out['text']  = $io4Plugin->handle404('/');
 			 $handled = true;
-			// flush();
-			//  die($out['text']);
+			  flush();
+			   die($out['text']);
 		 }
      }
 
@@ -768,7 +780,56 @@ class OIDplusCDNProxyPagePlugin  extends OIDplusPagePluginPublic
 			$tree_icon = null; // default icon (folder)
 		}
 
-		 $json[] = array(
+		$Array = (new \Wehowski\Helpers\ArrayHelper($json)) ;
+		$Array->after(0)->add([
+		    'id' => 'oidplus:home',
+		 	'icon' => $tree_icon,
+			// 'a_attr'=>[
+			// 	 'href'=>OIDplus::webpath(null,OIDplus::PATH_ABSOLUTE_CANONICAL),
+			 // ],
+			 // 'href'=>OIDplus::webpath(null,OIDplus::PATH_ABSOLUTE_CANONICAL),
+			'text' => _L('Home'),
+	   ]);
+
+			$json = $Array->all();
+		return true;
+		 /*
+
+		$json[] = [
+			'id' => 'oidplus:system',
+		//	 'icon' => $tree_icon,
+			'text' => _L('Registry'),
+	      ];
+
+
+		$json[] = [
+		    'id' => 'oidplus:home',
+		//	'icon' => $tree_icon,
+			'text' => _L('Home'),
+	   ];
+
+			return true;
+
+
+		$json[] = [
+			'id' => 'oidplus:system',
+			 'icon' => $tree_icon,
+			'text' => _L('Registry'),
+	      ];
+
+
+		$json[] = [
+		    'id' => 'oidplus:home',
+			'icon' => $tree_icon,
+
+			'text' => _L('Home'),
+	   ];
+
+		return false;
+
+		$Array = (new \Wehowski\Helpers\ArrayHelper($json))
+		->after(0)
+		->add([
 		    'id' => 'oidplus:home',
 			'icon' => $tree_icon,
 			// 'a_attr'=>[
@@ -776,17 +837,34 @@ class OIDplusCDNProxyPagePlugin  extends OIDplusPagePluginPublic
 			 // ],
 			 // 'href'=>OIDplus::webpath(null,OIDplus::PATH_ABSOLUTE_CANONICAL),
 			'text' => _L('Home'),
-		);
-		 /**/
-
-	  	$json[] = array(
+	   ]) ->after(0)
+			->add([
 			'id' => 'oidplus:system',
 			//'icon' => $tree_icon,
 			'text' => _L('Registry'),
-		);
+	      ]);
 
 
-	//	if (!OIDplus::authUtils()->isAdminLoggedIn()) return true;
+		$json = $Array->all();
+
+	  	 array_unshift($json,array(
+		    'id' => 'oidplus:home',
+			'icon' => $tree_icon,
+			// 'a_attr'=>[
+			// 	 'href'=>OIDplus::webpath(null,OIDplus::PATH_ABSOLUTE_CANONICAL),
+			 // ],
+			 // 'href'=>OIDplus::webpath(null,OIDplus::PATH_ABSOLUTE_CANONICAL),
+			'text' => _L('Home'),
+		),array(
+			'id' => 'oidplus:system',
+			//'icon' => $tree_icon,
+			'text' => _L('Registry'),
+		));
+
+
+	*/
+
+	 //	if (!OIDplus::authUtils()->isAdminLoggedIn()) return true;
 
 
 /*
@@ -809,15 +887,15 @@ class OIDplusCDNProxyPagePlugin  extends OIDplusPagePluginPublic
 			//'icon' => $tree_icon,
 			'text' => _L('Webfan IO4 Bridge'),
 		);
-*/
-		return true;
+
+		return true;		*/
 	}
 
 
 	 public function publicSitemap(&$out): void {
 		//$out[] = OIDplus::getSystemUrl().'?goto='.urlencode('com.frdlweb.freeweid');
 	  //	 $out[] = OIDplus::getSystemUrl().'?goto='.urlencode('oidplus:system');
-		//  $out[] = OIDplus::getSystemUrl();
+	  $out[] =OIDplus::webpath(null).'?goto='.urlencode('oidplus:home');
 	 }
 
 
