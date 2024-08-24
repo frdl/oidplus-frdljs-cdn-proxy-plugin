@@ -463,6 +463,7 @@ class OIDplusCDNProxyPagePlugin  extends OIDplusPagePluginPublic
 																 ]
 												  );
 
+					ob_enc_clean();
 				   echo $pageHTML;
 					// return true;
 					die();
@@ -752,7 +753,7 @@ class OIDplusCDNProxyPagePlugin  extends OIDplusPagePluginPublic
 
 
 
-   public function gui($id, &$out, &$handled): void {
+   public function gui(string $id, array &$out, bool &$handled): void {
 		 if('oidplus:home'===$id){
 			 /*
 			 header('Location: '.OIDplus::webpath(null,OIDplus::PATH_ABSOLUTE_CANONICAL) );
@@ -761,12 +762,18 @@ class OIDplusCDNProxyPagePlugin  extends OIDplusPagePluginPublic
 				 .'</a>'
 		     );
 			 */
-			 header('Location: '.OIDplus::webpath(null,OIDplus::PATH_ABSOLUTE_CANONICAL) );
-			 $io4Plugin = OIDplus::getPluginByOid("1.3.6.1.4.1.37476.9000.108.19361.24196");
-			 $out['text']  = $io4Plugin->handle404('/');
 			 $handled = true;
-			  flush();
-			   die($out['text']);
+			// header('Location: '.OIDplus::webpath(null,OIDplus::PATH_ABSOLUTE_CANONICAL) );
+			 $io4Plugin = OIDplus::getPluginByOid("1.3.6.1.4.1.37476.9000.108.19361.24196");
+			 $out['title'] =  OIDplus::config()->getValue('system_title');
+		//	 $out['text']  .= $io4Plugin->handle404('/');
+			 $homelink = OIDplus::webpath(null,OIDplus::PATH_ABSOLUTE_CANONICAL);
+			 $out['text']  .= '<a href="'.$homelink.'">'.$homelink.'</a>'
+				 .sprintf('<meta http-equiv="refresh" content="0; URL=%s">', $homelink);
+
+			 $out['icon'] = '';
+			//  flush();
+			//   die($out['text']);
 		 }
      }
 
@@ -782,16 +789,19 @@ class OIDplusCDNProxyPagePlugin  extends OIDplusPagePluginPublic
 
 		$Array = (new \Wehowski\Helpers\ArrayHelper($json)) ;
 		$Array->after(0)->add([
-		    'id' => 'oidplus:home',
+		     'id' => 'oidplus:home',
 		 	'icon' => $tree_icon,
-			// 'a_attr'=>[
-			// 	 'href'=>OIDplus::webpath(null,OIDplus::PATH_ABSOLUTE_CANONICAL),
-			 // ],
-			 // 'href'=>OIDplus::webpath(null,OIDplus::PATH_ABSOLUTE_CANONICAL),
+			 'a_attr'=>[
+			 	 'href'=>OIDplus::webpath(null,OIDplus::PATH_ABSOLUTE_CANONICAL),
+			 ],
+			 //  //'href'=>OIDplus::webpath(null,OIDplus::PATH_ABSOLUTE_CANONICAL),
 			'text' => _L('Home'),
 	   ]);
 
 			$json = $Array->all();
+		  if(function_exists('did_action') && !did_action('oidplus_public_pages_tree')){
+			  do_action('oidplus_public_pages_tree', $json);
+		  }
 		return true;
 		 /*
 
