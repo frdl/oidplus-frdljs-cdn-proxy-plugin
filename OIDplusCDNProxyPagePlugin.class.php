@@ -755,14 +755,30 @@ class OIDplusCDNProxyPagePlugin  extends OIDplusPagePluginPublic
 
 
    public function gui(string $id, array &$out, bool &$handled): void {
+	   
+       global $oidplus_public_pages_gui_out;
+       global $oidplus_public_pages_gui_handled;
+		
+		if (file_exists(__DIR__ . '/treeicon.png')) {
+			$tree_icon = OIDplus::webpath(__DIR__) . 'treeicon.png';
+		} else {
+			$tree_icon = null; // default icon (folder)
+		}
+ 
+		  $oidplus_public_pages_gui_out = $out;
+		  $oidplus_public_pages_gui_handled = $handled;
+		  if(!did_action('oidplus_public_pages_gui')){
+			  do_action('oidplus_public_pages_gui', $id);
+		  }
+		$out = $oidplus_public_pages_gui_out;
+		$handled = (bool)$oidplus_public_pages_gui_handled === true ? true : false;
+	 	unset($oidplus_public_pages_gui_out);	   
+	 	unset($handled);	   
+	   
+	   
+	   
 		 if('oidplus:home'===$id){
-			 /*
-			 header('Location: '.OIDplus::webpath(null,OIDplus::PATH_ABSOLUTE_CANONICAL) );
-			 die('<a href="'.OIDplus::webpath(null,OIDplus::PATH_ABSOLUTE_CANONICAL).'">
-			 Go to: '.OIDplus::webpath(null,OIDplus::PATH_ABSOLUTE_CANONICAL)
-				 .'</a>'
-		     );
-			 */
+	 
 			 $handled = true;
 			// header('Location: '.OIDplus::webpath(null,OIDplus::PATH_ABSOLUTE_CANONICAL) );
 			 $io4Plugin = OIDplus::getPluginByOid("1.3.6.1.4.1.37476.9000.108.19361.24196");
@@ -773,8 +789,7 @@ class OIDplusCDNProxyPagePlugin  extends OIDplusPagePluginPublic
 				 .sprintf('<meta http-equiv="refresh" content="0; URL=%s">', $homelink);
 
 			 $out['icon'] = '';
-			//  flush();
-			//   die($out['text']);
+ 
 		 }
      }
 
@@ -794,6 +809,7 @@ class OIDplusCDNProxyPagePlugin  extends OIDplusPagePluginPublic
 			  do_action('oidplus_public_pages_tree', $ra_email);
 		  }
 		$json = $oidplus_public_pages_tree_json;
+		unset($oidplus_public_pages_tree_json);
 		return true;
 	}
 
