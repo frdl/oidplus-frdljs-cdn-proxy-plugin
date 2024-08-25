@@ -29,7 +29,8 @@ class OIDplusCDNProxyPagePlugin  extends OIDplusPagePluginPublic
 
 	protected $cdnCacheDir;
 	protected $cdnCacheExpires;
-
+    public static $oidplus_public_pages_tree_json = [];
+	
 	public function __construct(){
 		$this->cdnCacheDir = OIDplus::baseConfig()->getValue('CDN_CACHE_DIRECTORY', OIDplus::localpath().'userdata/cache/cdn-assets/' );
 		$this->cdnCacheExpires = max(3 * 60 * 60, intval(OIDplus::baseConfig()->getValue('CDN_CACHE_EXPIRES', 24 * 60 * 60 )));
@@ -780,16 +781,17 @@ class OIDplusCDNProxyPagePlugin  extends OIDplusPagePluginPublic
 
 
 	public function tree(array &$json, string $ra_email=null, bool $nonjs=false, string $req_goto=''): bool {
-
+       
+		
 		if (file_exists(__DIR__ . '/treeicon.png')) {
 			$tree_icon = OIDplus::webpath(__DIR__) . 'treeicon.png';
 		} else {
 			$tree_icon = null; // default icon (folder)
 		}
-
+/*
 		$Array = (new \Wehowski\Helpers\ArrayHelper($json)) ;
 		$Array->after(0)->add([
-		     'id' => 'oidplus:home',
+		    'id' => 'oidplus:home',
 		 	'icon' => $tree_icon,
 			 'a_attr'=>[
 			 	 'href'=>OIDplus::webpath(null,OIDplus::PATH_ABSOLUTE_CANONICAL),
@@ -798,107 +800,14 @@ class OIDplusCDNProxyPagePlugin  extends OIDplusPagePluginPublic
 			'text' => _L('Home'),
 	   ]);
 
-			$json = $Array->all();
-		  if(function_exists('did_action') && !did_action('oidplus_public_pages_tree')){
-			  do_action('oidplus_public_pages_tree', $json);
+		  $json = $Array->all();
+		  */
+		  static::$oidplus_public_pages_tree_json = &$json;
+		  if(!did_action('oidplus_public_pages_tree')){
+			  do_action('oidplus_public_pages_tree', $ra_email);
 		  }
+		$json = static::$oidplus_public_pages_tree_json;
 		return true;
-		 /*
-
-		$json[] = [
-			'id' => 'oidplus:system',
-		//	 'icon' => $tree_icon,
-			'text' => _L('Registry'),
-	      ];
-
-
-		$json[] = [
-		    'id' => 'oidplus:home',
-		//	'icon' => $tree_icon,
-			'text' => _L('Home'),
-	   ];
-
-			return true;
-
-
-		$json[] = [
-			'id' => 'oidplus:system',
-			 'icon' => $tree_icon,
-			'text' => _L('Registry'),
-	      ];
-
-
-		$json[] = [
-		    'id' => 'oidplus:home',
-			'icon' => $tree_icon,
-
-			'text' => _L('Home'),
-	   ];
-
-		return false;
-
-		$Array = (new \Wehowski\Helpers\ArrayHelper($json))
-		->after(0)
-		->add([
-		    'id' => 'oidplus:home',
-			'icon' => $tree_icon,
-			// 'a_attr'=>[
-			// 	 'href'=>OIDplus::webpath(null,OIDplus::PATH_ABSOLUTE_CANONICAL),
-			 // ],
-			 // 'href'=>OIDplus::webpath(null,OIDplus::PATH_ABSOLUTE_CANONICAL),
-			'text' => _L('Home'),
-	   ]) ->after(0)
-			->add([
-			'id' => 'oidplus:system',
-			//'icon' => $tree_icon,
-			'text' => _L('Registry'),
-	      ]);
-
-
-		$json = $Array->all();
-
-	  	 array_unshift($json,array(
-		    'id' => 'oidplus:home',
-			'icon' => $tree_icon,
-			// 'a_attr'=>[
-			// 	 'href'=>OIDplus::webpath(null,OIDplus::PATH_ABSOLUTE_CANONICAL),
-			 // ],
-			 // 'href'=>OIDplus::webpath(null,OIDplus::PATH_ABSOLUTE_CANONICAL),
-			'text' => _L('Home'),
-		),array(
-			'id' => 'oidplus:system',
-			//'icon' => $tree_icon,
-			'text' => _L('Registry'),
-		));
-
-
-	*/
-
-	 //	if (!OIDplus::authUtils()->isAdminLoggedIn()) return true;
-
-
-/*
-		$json[] = array(
-			'id' => self::PAGE_ID_COMPOSER,
-			//'icon' => $tree_icon,
-			'text' => _L('Composer Plugins'),
-		);
-
-
-		$json[] = array(
-			'id' => self::PAGE_ID_WEBFAT,
-			//'icon' => $tree_icon,
-			'text' => _L('Webfan Webfat Setup'),
-			//'href'=>$this->getWebfatSetupLink(),
-		);
-
-		$json[] = array(
-			'id' => self::PAGE_ID_BRIDGE,
-			//'icon' => $tree_icon,
-			'text' => _L('Webfan IO4 Bridge'),
-		);
-
-		return true;		*/
 	}
 
 
