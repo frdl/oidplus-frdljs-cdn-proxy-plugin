@@ -1,7 +1,7 @@
 <?php
 /**
- * Plugin Name: IO4 
- * Description: This is an example OIDplus/IO4-Plugin aware and enabled Plugin.
+ * Plugin Name: CDN 
+ * Description: This is an example CDN proxy Plugin.
  * Version: 0.0.1
  * Author: Frdlweb
  * Author URI: https://frdl.de
