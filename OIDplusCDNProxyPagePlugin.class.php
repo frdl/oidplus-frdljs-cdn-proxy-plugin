@@ -772,8 +772,8 @@ class OIDplusCDNProxyPagePlugin  extends OIDplusPagePluginPublic
 		  }
 		$out = $oidplus_public_pages_gui_out;
 		$handled = (bool)$oidplus_public_pages_gui_handled === true ? true : false;
-	 	unset($oidplus_public_pages_gui_out);	   
-	 	unset($handled);	   
+	  unset($oidplus_public_pages_gui_out);	   
+	//	THIS BRFEAKS HOME NO !	unset($handled);	   
 	   
 	   
 	   
@@ -781,7 +781,7 @@ class OIDplusCDNProxyPagePlugin  extends OIDplusPagePluginPublic
 	 
 			 $handled = true;
 			// header('Location: '.OIDplus::webpath(null,OIDplus::PATH_ABSOLUTE_CANONICAL) );
-			 $io4Plugin = OIDplus::getPluginByOid("1.3.6.1.4.1.37476.9000.108.19361.24196");
+			// $io4Plugin = OIDplus::getPluginByOid("1.3.6.1.4.1.37476.9000.108.19361.24196");
 			 $out['title'] =  OIDplus::config()->getValue('system_title');
 		//	 $out['text']  .= $io4Plugin->handle404('/');
 			 $homelink = OIDplus::webpath(null,OIDplus::PATH_ABSOLUTE_CANONICAL);
