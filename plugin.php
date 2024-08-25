@@ -53,7 +53,7 @@ add_action(
 		//string $include_path = null,
 	);
 
-//you can use autowiring as from container->invoker->call( autowired arguments, [parameters]) !!!
+//you can use autowiring as from container->invoker->call( \callable | closure(autowired arguments), [parameters]) !!!
 return (function($container){
 	//print_r(get_class($container));
 });
