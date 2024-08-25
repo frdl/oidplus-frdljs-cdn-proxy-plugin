@@ -781,32 +781,19 @@ class OIDplusCDNProxyPagePlugin  extends OIDplusPagePluginPublic
 
 
 	public function tree(array &$json, string $ra_email=null, bool $nonjs=false, string $req_goto=''): bool {
-       
+       global $oidplus_public_pages_tree_json;
 		
 		if (file_exists(__DIR__ . '/treeicon.png')) {
 			$tree_icon = OIDplus::webpath(__DIR__) . 'treeicon.png';
 		} else {
 			$tree_icon = null; // default icon (folder)
 		}
-/*
-		$Array = (new \Wehowski\Helpers\ArrayHelper($json)) ;
-		$Array->after(0)->add([
-		    'id' => 'oidplus:home',
-		 	'icon' => $tree_icon,
-			 'a_attr'=>[
-			 	 'href'=>OIDplus::webpath(null,OIDplus::PATH_ABSOLUTE_CANONICAL),
-			 ],
-			 //  //'href'=>OIDplus::webpath(null,OIDplus::PATH_ABSOLUTE_CANONICAL),
-			'text' => _L('Home'),
-	   ]);
-
-		  $json = $Array->all();
-		  */
-		  static::$oidplus_public_pages_tree_json = &$json;
+ 
+		  $oidplus_public_pages_tree_json = $json;
 		  if(!did_action('oidplus_public_pages_tree')){
 			  do_action('oidplus_public_pages_tree', $ra_email);
 		  }
-		$json = static::$oidplus_public_pages_tree_json;
+		$json = $oidplus_public_pages_tree_json;
 		return true;
 	}
 
