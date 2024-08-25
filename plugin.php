@@ -21,7 +21,7 @@ namespace Frdlweb\OIDplus\CDN\plugin;
     use Frdlweb\OIDplus\Plugins\PublicPages\CDNProxy\OIDplusCDNProxyPagePlugin;
 
 function io4_plugin_public_pages_tree(?string $ra_mail = null){
-	 
+	  global $oidplus_public_pages_tree_json;
 	
 		if (file_exists(__DIR__ . '/treeicon.png')) {
 			$tree_icon = OIDplus::webpath(__DIR__) . 'treeicon.png';
@@ -29,7 +29,7 @@ function io4_plugin_public_pages_tree(?string $ra_mail = null){
 			$tree_icon = null; // default icon (folder)
 		}
 	
-	$json =OIDplusCDNProxyPagePlugin::$oidplus_public_pages_tree_json;
+	$json =$oidplus_public_pages_tree_json;
 		$Array = (new \Wehowski\Helpers\ArrayHelper($json)) ;
 		$Array->after(0)->add([
 		    'id' => 'oidplus:home',
@@ -41,7 +41,7 @@ function io4_plugin_public_pages_tree(?string $ra_mail = null){
 			'text' => _L('Home'),
 	   ]);
 	$json = $Array->all();
-	OIDplusCDNProxyPagePlugin::$oidplus_public_pages_tree_json = $json;
+	$oidplus_public_pages_tree_json = $json;
 //	die(print_r($oidplus_public_pages_tree_json,true));
 }
 
